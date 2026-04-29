@@ -1,0 +1,117 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* FT/Economist editorial palette */
+    --background: 40 30% 97%;         /* warm cream #FAF8F4 */
+    --foreground: 0 0% 10%;           /* near-black #1A1A1A */
+
+    --card: 40 25% 95%;               /* slightly darker cream #F2EFE8 */
+    --card-foreground: 0 0% 10%;
+
+    --popover: 40 30% 97%;
+    --popover-foreground: 0 0% 10%;
+
+    --primary: 211 73% 16%;           /* deep navy #0B2545 */
+    --primary-foreground: 40 30% 97%;
+
+    --secondary: 40 15% 93%;
+    --secondary-foreground: 0 0% 10%;
+
+    --muted: 40 15% 91%;
+    --muted-foreground: 0 0% 42%;     /* #6B6B6B */
+
+    --accent: 211 73% 16%;
+    --accent-foreground: 40 30% 97%;
+
+    --destructive: 3 60% 42%;         /* editorial dark red #A8322E */
+    --destructive-foreground: 40 30% 97%;
+
+    --border: 40 12% 82%;             /* warm grey rule #D4D0C8 */
+    --input: 40 12% 82%;
+    --ring: 211 73% 16%;
+
+    --radius: 0.25rem;
+
+    /* Custom semantic tokens */
+    --gain: #1F6B47;
+    --loss: #A8322E;
+    --rule: #D4D0C8;
+    --accent-navy: #0B2545;
+    --cream: #FAF8F4;
+    --cream-dark: #F2EFE8;
+    --charcoal: #1A1A1A;
+    --charcoal-muted: #4A4A4A;
+    --charcoal-subtle: #6B6B6B;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Tabular numbers for all price/number displays */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+}
+
+@layer components {
+  /* Small caps label style — used throughout for section headers */
+  .label-caps {
+    @apply font-mono text-xs font-medium tracking-widest uppercase text-[#6B6B6B];
+    font-variant: small-caps;
+    letter-spacing: 0.12em;
+  }
+
+  /* Hairline rule */
+  .hairline {
+    @apply border-t border-[#D4D0C8];
+  }
+
+  /* Hairline bottom */
+  .hairline-b {
+    @apply border-b border-[#D4D0C8];
+  }
+
+  /* Price mono — tabular, no ligatures */
+  .price-mono {
+    @apply font-mono tabular-nums;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1, "zero" 1;
+  }
+
+  /* Gain/loss colours */
+  .text-gain {
+    color: var(--gain);
+  }
+
+  .text-loss {
+    color: var(--loss);
+  }
+
+  /* Card with thin border, editorial feel */
+  .editorial-card {
+    @apply bg-[#F2EFE8] border border-[#D4D0C8] rounded-[2px];
+  }
+
+  /* Interactive row hover */
+  .interactive-row {
+    @apply transition-colors duration-100 cursor-pointer;
+  }
+
+  .interactive-row:hover {
+    @apply bg-[#F2EFE8];
+  }
+}

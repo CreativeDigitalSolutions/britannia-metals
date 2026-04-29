@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "../_shared/supabase-client.ts": "../_shared/supabase-client.ts",
+    "../_shared/news-fetcher.ts": "../_shared/news-fetcher.ts",
+    "../_shared/types.ts": "../_shared/types.ts"
+  }
+}

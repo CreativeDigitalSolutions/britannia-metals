@@ -1,0 +1,8 @@
+{
+  "imports": {
+    "../_shared/supabase-client.ts": "../_shared/supabase-client.ts",
+    "../_shared/types.ts": "../_shared/types.ts",
+    "../_shared/prompts.ts": "../_shared/prompts.ts",
+    "../_shared/anthropic-client.ts": "../_shared/anthropic-client.ts"
+  }
+}

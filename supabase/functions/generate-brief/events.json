@@ -1,0 +1,138 @@
+[
+  {
+    "date": "2026-04-24",
+    "time": null,
+    "event": "LME Weekly Warrant Stock Report",
+    "category": "lme",
+    "impact": "medium",
+    "metals": ["copper", "aluminium", "zinc", "nickel", "lead", "tin"]
+  },
+  {
+    "date": "2026-04-25",
+    "time": "08:30 BST",
+    "event": "LBMA AM Gold Price Auction (reference)",
+    "category": "precious",
+    "impact": "low",
+    "metals": ["gold"]
+  },
+  {
+    "date": "2026-04-28",
+    "time": "02:45 BST",
+    "event": "Caixin China Manufacturing PMI (April)",
+    "category": "china",
+    "impact": "high",
+    "metals": []
+  },
+  {
+    "date": "2026-04-28",
+    "time": null,
+    "event": "LME Weekly Warrant Stock Report",
+    "category": "lme",
+    "impact": "medium",
+    "metals": ["copper", "aluminium", "zinc", "nickel", "lead", "tin"]
+  },
+  {
+    "date": "2026-04-30",
+    "time": "02:00 BST",
+    "event": "China NBS Manufacturing PMI (April)",
+    "category": "china",
+    "impact": "high",
+    "metals": []
+  },
+  {
+    "date": "2026-05-01",
+    "time": "13:30 BST",
+    "event": "US ISM Manufacturing PMI (April)",
+    "category": "us",
+    "impact": "high",
+    "metals": []
+  },
+  {
+    "date": "2026-05-01",
+    "time": null,
+    "event": "LME Copper Option Expiry (May prompt)",
+    "category": "lme",
+    "impact": "high",
+    "metals": ["copper"]
+  },
+  {
+    "date": "2026-05-05",
+    "time": null,
+    "event": "LME Weekly Warrant Stock Report",
+    "category": "lme",
+    "impact": "medium",
+    "metals": ["copper", "aluminium", "zinc", "nickel", "lead", "tin"]
+  },
+  {
+    "date": "2026-05-07",
+    "time": "13:30 BST",
+    "event": "US Non-Farm Payrolls (April)",
+    "category": "us",
+    "impact": "high",
+    "metals": []
+  },
+  {
+    "date": "2026-05-08",
+    "time": null,
+    "event": "LME Commitments of Traders Report (weekly)",
+    "category": "lme",
+    "impact": "medium",
+    "metals": ["copper", "aluminium", "zinc", "nickel", "lead", "tin"]
+  },
+  {
+    "date": "2026-05-12",
+    "time": "13:30 BST",
+    "event": "US CPI (April)",
+    "category": "us",
+    "impact": "high",
+    "metals": []
+  },
+  {
+    "date": "2026-05-12",
+    "time": null,
+    "event": "LME Weekly Warrant Stock Report",
+    "category": "lme",
+    "impact": "medium",
+    "metals": ["copper", "aluminium", "zinc", "nickel", "lead", "tin"]
+  },
+  {
+    "date": "2026-05-13",
+    "time": "13:30 BST",
+    "event": "US PPI (April)",
+    "category": "us",
+    "impact": "medium",
+    "metals": []
+  },
+  {
+    "date": "2026-05-15",
+    "time": "13:30 BST",
+    "event": "US Retail Sales (April)",
+    "category": "us",
+    "impact": "medium",
+    "metals": []
+  },
+  {
+    "date": "2026-05-15",
+    "time": null,
+    "event": "LME Commitments of Traders Report (weekly)",
+    "category": "lme",
+    "impact": "medium",
+    "metals": ["copper", "aluminium", "zinc", "nickel", "lead", "tin"]
+  },
+  {
+    "date": "2026-05-19",
+    "time": null,
+    "event": "LME Weekly Warrant Stock Report",
+    "category": "lme",
+    "impact": "medium",
+    "metals": ["copper", "aluminium", "zinc", "nickel", "lead", "tin"]
+  },
+  {
+    "date": "2026-05-21",
+    "time": "19:00 BST",
+    "event": "FOMC Meeting Minutes (May meeting)",
+    "category": "us",
+    "impact": "high",
+    "metals": []
+  }
+]
