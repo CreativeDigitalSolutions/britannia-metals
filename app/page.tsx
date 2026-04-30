@@ -18,8 +18,10 @@ import {
 } from '@/lib/data'
 import { METALS } from '@/lib/metals'
 
-// Revalidate every 60 seconds — matches the 2-hour ingest cron cadence
-export const revalidate = 60
+// Force dynamic rendering — page fetches live from Supabase on every request.
+// ISR (revalidate) is unreliable here because env vars aren't available at build
+// time, so the statically-baked version always has empty data.
+export const dynamic = 'force-dynamic'
 
 export default async function DashboardPage() {
   const [prices, stocks, arb, arbHistory, news, brief, events] = await Promise.all([

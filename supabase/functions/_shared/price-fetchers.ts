@@ -592,6 +592,95 @@ export async function fetchYahooFallback(metals: YahooMetal[]): Promise<YahooFet
   return { status, prices, source: 'yahoo', fetched_at, errors };
 }
 
+// =============================================================================
+// WisdomTree ETC module — zinc, nickel, tin, lead (LME fallback via ETCs)
+// =============================================================================
+
+// ETC calibration ratios — empirically derived by cross-referencing ETC prices
+// against confirmed LME cash prices on April 29, 2026.
+//
+// NOTE: ZINC.L, NICK.L, TINM.L, LEED.L are SYNTHETIC (swap-backed) ETCs tracking
+// the Bloomberg Commodity Subindex for each metal. They do NOT hold physical metal.
+// The ratio drifts ~0.5-1% per year due to futures roll costs and management fees.
+// Recalibrate quarterly against a free LME source (e.g. westmetall.com).
+//
+// Calibration date: 2026-04-29
+// Conversion: LME_price (USD/t) = ETC_unit_price (USD) / ratio (t/unit)
+const ETC_CONFIGS: Array<{
+  metal: LmeMetal;
+  symbol: string;
+  ratio_tonnes_per_unit: number;  // ETC price ÷ this = USD/tonne
+}> = [
+  { metal: 'zinc',   symbol: 'ZINC.L', ratio_tonnes_per_unit: 0.003452 },  // $11.498 / 0.003452 = $3,331/t
+  { metal: 'nickel', symbol: 'NICK.L', ratio_tonnes_per_unit: 0.000884 },  // $17.032 / 0.000884 = $19,270/t
+  { metal: 'tin',    symbol: 'TINM.L', ratio_tonnes_per_unit: 0.002296 },  // $113.115 / 0.002296 = $49,260/t
+  { metal: 'lead',   symbol: 'LEED.L', ratio_tonnes_per_unit: 0.008477 },  // ~$16.56 / 0.008477 = $1,953/t
+];
+
+export interface EtcPriceRow {
+  metal: LmeMetal;
+  price: number;          // USD/tonne (already converted)
+  currency: 'USD';
+  unit: 'tonne';
+  as_of: string;
+  prev_close: number | null;
+  change_pct: number | null;
+  raw_symbol: string;
+}
+
+export interface EtcFetchResult {
+  status: 'success' | 'partial' | 'failed';
+  prices: EtcPriceRow[];
+  fetched_at: string;
+  errors: string[];
+}
+
+/**
+ * Fetches WisdomTree ETC prices from Yahoo Finance and converts to USD/tonne
+ * using hardcoded physical entitlements. Use when LME is unavailable.
+ * Results should be labelled 'indicative' — they track LME closely but are
+ * not official LME settlement prices.
+ */
+export async function fetchWisdomTreeETCs(
+  metals: LmeMetal[] = ['zinc', 'nickel', 'tin', 'lead'],
+): Promise<EtcFetchResult> {
+  const fetched_at = new Date().toISOString();
+  const prices: EtcPriceRow[] = [];
+  const errors: string[] = [];
+
+  const configs = ETC_CONFIGS.filter((c) => metals.includes(c.metal));
+
+  await Promise.all(
+    configs.map(async ({ metal, symbol, ratio_tonnes_per_unit }) => {
+      try {
+        const raw = await fetchYahooQuote(symbol);
+        if (!raw) {
+          errors.push(`${symbol}: fetchYahooQuote returned null`);
+          return;
+        }
+
+        const price = roundTo2(raw.price / ratio_tonnes_per_unit);
+        const prev_close = raw.prev_close != null
+          ? roundTo2(raw.prev_close / ratio_tonnes_per_unit)
+          : null;
+        const change_pct = prev_close != null
+          ? roundTo2(((price - prev_close) / prev_close) * 100)
+          : null;
+
+        prices.push({ metal, price, currency: 'USD', unit: 'tonne', as_of: raw.as_of, prev_close, change_pct, raw_symbol: symbol });
+        console.log(`[etc] ${symbol} → $${raw.price.toFixed(4)}/unit ÷ ${ratio_tonnes_per_unit} = $${price.toFixed(0)}/tonne`);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error(`[etc] ERROR fetching ${symbol}: ${msg}`);
+        errors.push(`${symbol}: ${msg}`);
+      }
+    }),
+  );
+
+  const status = errors.length === 0 ? 'success' : prices.length === 0 ? 'failed' : 'partial';
+  return { status, prices, fetched_at, errors };
+}
+
 /**
  * Fetches HG=F daily closes for the last N calendar days, converted to USD/tonne.
  * Used for the LME–COMEX arb sparkline.

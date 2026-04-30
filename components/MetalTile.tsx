@@ -61,7 +61,7 @@ export default function MetalTile({ metal, variant = 'base', onClick }: MetalTil
 
         <div className="mt-2">
           <span className="font-mono text-[10px] text-[#B5701A] border border-[#B5701A]/30 bg-[#B5701A]/5 px-1.5 py-0.5 leading-none">
-            LME feed blocked
+            Data unavailable
           </span>
         </div>
       </div>

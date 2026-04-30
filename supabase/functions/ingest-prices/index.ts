@@ -13,7 +13,9 @@
  * accepted constraint. When LME fails:
  *   - copper + aluminium: use Yahoo Finance fallback (HG=F / ALI=F), marked
  *     source: 'yahoo_fallback' in the prices table
- *   - zinc, nickel, lead, tin: NO rows written (frontend renders "data unavailable")
+ *   - zinc, nickel, tin: use WisdomTree ETCs (ZINC.L, NICK.L, TINM.L) converted
+ *     from $/unit → $/tonne via physical entitlements; source: 'yahoo_fallback'
+ *   - lead: use WisdomTree Lead ETC (LEAD.L) if available; otherwise no row written
  *   - lme_stocks: nothing written (frontend detects empty table and renders accordingly)
  *   - arb_history: written with both LME and COMEX values set to Yahoo HG=F
  *     (spread_usd = 0, which is technically correct; UI shows "n/a")
@@ -33,9 +35,11 @@ import {
   fetchLmeData,
   fetchYahooPrimary,
   fetchYahooFallback,
+  fetchWisdomTreeETCs,
   type LmePriceRow,
   type LmeStockRow,
   type YahooPriceRow,
+  type EtcPriceRow,
 } from '../_shared/price-fetchers.ts';
 import type { PriceInsert, LmeStockInsert, ArbHistoryInsert, CronLogInsert } from '../_shared/types.ts';
 
@@ -51,6 +55,8 @@ interface IngestSummary {
   lme_status: 'success' | 'partial' | 'failed';
   yahoo_status: 'success' | 'partial' | 'failed';
   fallback_activated: boolean;
+  etc_activated: boolean;
+  etc_metals_fetched: string[];
   duration_ms: number;
   errors: string[];
 }
@@ -77,10 +83,24 @@ function yahooPriceToInsert(row: YahooPriceRow, forceSource?: 'yahoo' | 'yahoo_f
   return {
     metal: row.metal,
     source: forceSource ?? (row.is_fallback ? 'yahoo_fallback' : 'yahoo'),
-    contract: row.contract,
+    contract: 'cash',  // front_month from Yahoo is our best available cash-equivalent; buildMetalDisplayData expects 'cash'
     price: row.price,
     currency: 'USD',
     unit: row.unit,
+    as_of: row.as_of,
+    prev_close: row.prev_close,
+    change_pct: row.change_pct,
+  };
+}
+
+function etcPriceToInsert(row: EtcPriceRow): PriceInsert {
+  return {
+    metal: row.metal,
+    source: 'yahoo_fallback',  // ETC tracks LME closely; indicative, not official
+    contract: 'cash',
+    price: row.price,
+    currency: 'USD',
+    unit: 'tonne',
     as_of: row.as_of,
     prev_close: row.prev_close,
     change_pct: row.change_pct,
@@ -180,8 +200,28 @@ Deno.serve(async (req: Request) => {
     if (fallbackResult.status !== 'success') {
       errors.push(...fallbackResult.errors.map((e) => `Yahoo fallback: ${e}`));
     }
-    // zinc, nickel, lead, tin: intentionally no fallback — see file header
-    console.log('[ingest-prices] No Yahoo fallback for zinc/nickel/lead/tin — those tiles will show "data unavailable"');
+    // zinc, nickel, lead, tin: handled separately via WisdomTree ETCs in step 4b
+  }
+
+  // ── 4b. WisdomTree ETCs for zinc, nickel, tin, lead (always when LME failed) ─
+  // LME-official has no Yahoo equivalent for these four metals. WisdomTree ETCs
+  // (ZINC.L, NICK.L, TINM.L, LEAD.L) track LME prices via physical LME warrants.
+  // Prices are converted from $/unit → $/tonne using hardcoded physical entitlements.
+  let etcResult: Awaited<ReturnType<typeof fetchWisdomTreeETCs>> | null = null;
+
+  if (lmeResult.status === 'failed' || lmeResult.status === 'partial') {
+    const lmeMetalsPresent = new Set(lmeResult.prices.map((r) => r.metal));
+    const etcNeeded = (['zinc', 'nickel', 'tin', 'lead'] as const).filter(
+      (m) => !lmeMetalsPresent.has(m),
+    );
+    if (etcNeeded.length > 0) {
+      console.log(`[ingest-prices] Fetching WisdomTree ETCs for: ${etcNeeded.join(', ')}`);
+      etcResult = await fetchWisdomTreeETCs(etcNeeded);
+      if (etcResult.status !== 'success') {
+        errors.push(...etcResult.errors.map((e) => `WisdomTree ETC: ${e}`));
+      }
+      console.log(`[ingest-prices] ETC fetch complete: ${etcResult.prices.length} prices, ${etcResult.errors.length} errors`);
+    }
   }
 
   // ── 5. Compose price rows ─────────────────────────────────────────────────
@@ -203,6 +243,13 @@ Deno.serve(async (req: Request) => {
     for (const row of fallbackResult.prices) {
       // Ensure source is explicitly 'yahoo_fallback'
       priceRows.push(yahooPriceToInsert(row, 'yahoo_fallback'));
+    }
+  }
+
+  // WisdomTree ETC rows for zinc, nickel, tin, lead (LME failed path only)
+  if (etcResult) {
+    for (const row of etcResult.prices) {
+      priceRows.push(etcPriceToInsert(row));
     }
   }
 
@@ -326,6 +373,8 @@ Deno.serve(async (req: Request) => {
     lme_status: lmeResult.status,
     yahoo_status: yahooResult.status,
     fallback_activated: fallbackActivated,
+    etc_activated: etcResult !== null,
+    etc_metals_fetched: etcResult?.prices.map((r) => r.metal) ?? [],
     duration_ms,
     errors,
   };
