@@ -1,7 +1,6 @@
 'use client'
 
 import type { ArbHistoryRow } from '@/lib/data'
-import { ArbSparkline } from '@/components/ArbSparkline'
 
 interface ArbPanelProps {
   current: ArbHistoryRow | null
@@ -103,12 +102,6 @@ export default function ArbPanel({ current, history }: ArbPanelProps) {
               />
             )}
 
-            <div className="self-stretch w-px bg-[#D4D0C8] hidden sm:block" />
-
-            {/* Inline 14-day spread sparkline */}
-            <div className="flex flex-col justify-center">
-              <ArbSparkline history={history.slice(-14)} />
-            </div>
           </div>
 
           <p className="mt-3 pt-3 border-t border-[#D4D0C8] font-mono text-[11px] text-[#6B6B6B]">
